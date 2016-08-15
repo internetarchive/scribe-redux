@@ -1,0 +1,15 @@
+Kivy==1.8.0
+Kivy-Garden==0.1.1
+Pillow==3.0.0
+Mako==0.5.0
+MarkupSafe==0.15
+args==0.1.0
+internetarchive
+jsonpatch==0.4
+lazytable==0.3.2
+py==1.4.23
+pytest==2.3.4
+requests
+requests[security]
+six==1.4.1
+futures==3.0.2

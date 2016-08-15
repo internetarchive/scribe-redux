@@ -1,0 +1,157 @@
+#### This file contains the UI templates, actions and bindings
+
+#:import ListAdapter kivy.adapters.listadapter.ListAdapter
+#:import ListItemButton kivy.uix.listview.ListItemButton
+
+
+### ScribeWidget is the main UI container
+###
+<ScribeWidget>:
+    id: _scribe_widget
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    ## the toolbar on the top
+    ##
+    ActionBar:
+        pos_hint: {'top':1}
+        background_color: 0,0,0,1
+        ActionView:
+            use_separator: True
+            ActionPrevious:
+                #title: 'Scribe'
+                id: _scribe_widget_action_previous
+                text: 'Scribe\n[i]from the Internet Archive[/i]'
+                with_previous: False
+                markup: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+                padding: (-75, 0)
+   
+
+    ScreenManager:
+        id: _screen_manager
+        CaptureScreen:
+            id: _capture_screen
+            name: 'capture_screen'
+            scribe_widget: _scribe_widget
+            screen_manager: _screen_manager
+       
+<CaptureScreen>
+    id: _capture_screen
+    CaptureCover
+
+<CaptureCover>
+    orientation: 'horizontal'
+    BoxLayout:
+        spacing: 5
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 20
+            #size_hint_y: None
+            #height: 350
+            spacing: 5
+            pos_hint: {'center_y':.5}
+            DWWIWidget
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 40
+                #padding: [0, 15, 0, 0]
+                Label:
+                    text: 'Collection string:'
+                    size_hint_x: .4
+                    valign: 'middle'
+                Button:
+                    size_hint_x: .2
+                    text: "MARC"
+                    on_release: root.add_marc()
+
+
+<MARCDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        id: _root_box
+        BoxLayout:
+            id: _list_box
+            ScrollView:
+                id: _scrollview
+                GridLayout:
+                    id: _metadata
+                    cols: 2
+                    size_hint_y: None
+                    spacing: 5
+                    padding: [0, 0, 5, 0]
+                    Label:
+                        color: 1,1,1,1
+                        text: 'Catalog:'
+                        size_hint: (None, None)
+                        size: (75, 40)
+                        valign: 'middle'
+                    MetadataTextInput:
+                        hint_text: ''
+                        multiline: False
+                        size_hint_y: None
+                        height: 40
+                        metadata_key: 'catalog'
+                    Label:
+                        color: 1,1,1,1
+                        text: 'Field:'
+                        size_hint: (None, None)
+                        size: (75, 40)
+                        valign: 'middle'
+                    MetadataTextInput:
+                        hint_text: ''
+                        multiline: False
+                        size_hint_y: None
+                        height: 40
+                        metadata_key: 'field'
+                    Label:
+                        color: 1,1,1,1
+                        text: 'Term:'
+                        size_hint: (None, None)
+                        size: (75, 40)
+                        valign: 'middle'
+                    MetadataTextInput:
+                        hint_text: ''
+                        multiline: False
+                        size_hint_y: None
+                        height: 40
+                        metadata_key: 'term'
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.popup.dismiss()
+            Button:
+                text: "Done"
+                on_release: root.save_metadata()
+
+<UniversalIDDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        id: _root_box
+        BoxLayout:
+            id: _list_box
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.popup.dismiss()
+
+            Button:
+                text: "Select"
+                on_release: root.button_callback()
+

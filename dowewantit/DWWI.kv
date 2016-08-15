@@ -1,0 +1,18 @@
+<DWWIWidget>:
+    orientation: 'horizontal'
+    padding: 10
+    spacing: 5
+    TextInput:
+        id: _identifier
+        hint_text: 'IDENTIFIER'
+        multiline: False
+        size_hint_y: None
+        height: 40
+        metadata_key: 'identifier'
+    Button:
+        id: _button
+        text: 'Do we want it?'
+        size_hint_y: None
+        height: 40
+        pos_hint: {'center_x':.5}
+        on_press: root.search()
