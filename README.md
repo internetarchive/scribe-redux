@@ -2,7 +2,20 @@
 
 This repo contains a barebones skeleton of the Scribe3 application that provides a reference framework for rapid feature development. 
 
-## Setting up
+## Running in a VM
+
+Running inside a virtualized environment is strongly encouraged. To this end, a Vagrantfile is included. Run with 
+
+        vagrant up
+
+and the provisioning script will take care of setting up the environment for you. 
+
+The VM is set up to share the folder in /vagrant, so your changes are immediately reflected. From the VM GUI, you can thus run with:
+
+		cd /vagrant
+		python scribe.py
+
+## Setting up from scratch
 
 Install the dependencies you'll need to compile Cython, plus pip and git if you don't already have them
 
@@ -22,7 +35,7 @@ It's very important that you install this specific Cython version and that you d
 
 		pip install -r requirements.txt
 
-which will install kivy 1.8.1. No other version is allowed. 
+which will install kivy 1.8.0. No other version is allowed. 
 
 You are now ready to launch with
 
@@ -45,15 +58,11 @@ Activate your virtualenv before running as above:
 
         source venv/bin/activate
 
-### Running in a VM
-
-Running inside a virtualized environment is strongly encouraged. To this end, a Vagrantfile is included. Run with 
-
-        vagrant up
-
 
 ## Guidelines
 
-Changes are to be made in folders, one per feature. "dowewantit" contains the skeleton for the feature that consumes our Do We Want It API. 
+- Changes are to be made in folders, one per feature. "dowewantit" contains the skeleton for the feature that consumes our Do We Want It API. 
+- KV files must be used. 
+- The main widget structure that mimics the real Scribe3 application should not be touched, and changes should be self-contained to new widgets.
 
 
