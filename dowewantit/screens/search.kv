@@ -1,0 +1,22 @@
+MainScreen:
+    name: 'search'
+
+    GridLayout:
+        cols: 2
+        orientation: 'vertical'
+        padding: 20
+        spacing: 10
+        MetadataTextInput:
+            id: _identifier
+            hint_text: 'IDENTIFIER'
+            multiline: False
+            height: 40
+            size_hint_y: None
+            metadata_key: 'identifier'
+        Button:
+            id: _button
+            text: 'Search'
+            height: 40
+            size_hint_y: None
+            pos_hint: {'center_x':.5}
+            on_press: app.root.search(self)

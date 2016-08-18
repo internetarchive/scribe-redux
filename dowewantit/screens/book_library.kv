@@ -1,0 +1,14 @@
+MainScreen:
+    name: 'book_library'
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 10
+        Label:
+            text: 'BOOK LIBRARY'
+            font_size: 40
+        Button:
+            text: 'Back'
+            size_hint_y: 0.5
+            on_release: app.root.go_screen('entry', 'right')

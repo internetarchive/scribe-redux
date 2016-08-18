@@ -1,18 +1,53 @@
 <DWWIWidget>:
-    orientation: 'horizontal'
+    orientation: 'vertical'
     padding: 10
     spacing: 5
-    TextInput:
-        id: _identifier
-        hint_text: 'IDENTIFIER'
-        multiline: False
-        size_hint_y: None
-        height: 40
-        metadata_key: 'identifier'
-    Button:
-        id: _button
-        text: 'Do we want it?'
-        size_hint_y: None
-        height: 40
-        pos_hint: {'center_x':.5}
-        on_press: root.search()
+    ScreenManager:
+        id: sm
+        size: 500, 500
+        on_current_screen:
+            idx = root.screen_names.index(args[1].name)
+            if idx > -1: root.hierarchy.append(idx)
+
+<CautionPopup>:
+    size_hint: .8, .6
+    auto_dismiss: False
+    title: 'DWWI'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20, 20
+        spacing: 40
+        Label:
+            id: lb_content
+            font_size: 30
+            text: ""
+        Label:
+            font_size: 30
+            text: ""
+        GridLayout:
+            cols: 2
+            spacing: 10, 10
+            size_hint: 1, 0.5
+            Button:
+                text: 'Try again'
+                on_press: app.root.try_again()
+            Button:
+                id: btn_confirm
+                text: 'Confirm'
+                on_press: app.root.confirm()
+
+<ResultPopup>:
+    size_hint: .8, .6
+    auto_dismiss: False
+    title: 'DWWI'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20, 20
+        spacing: 40
+        Label:
+            id: lb_content
+            font_size: 30
+            text: "http://www.www.www"
+        Button:
+            text: 'OK'
+            on_press: root.dismiss()
