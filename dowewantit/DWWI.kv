@@ -1,10 +1,16 @@
 <DWWIWidget>:
+    id: ttt
     orientation: 'vertical'
     padding: 10
     spacing: 5
+#    canvas.before:
+#        Color:
+#            rgb: 0, 0.66, 0.89
+#        Rectangle:
+#            size: self.width, self.height
+
     ScreenManager:
         id: sm
-        size: 500, 500
         on_current_screen:
             idx = root.screen_names.index(args[1].name)
             if idx > -1: root.hierarchy.append(idx)
@@ -30,16 +36,58 @@
             size_hint: 1, 0.5
             Button:
                 text: 'Try again'
-                on_press: app.root.try_again()
+                on_press: root.on_btn_left()
             Button:
                 id: btn_confirm
                 text: 'Confirm'
-                on_press: app.root.confirm()
+                on_press: root.on_btn_right()
 
-<ResultPopup>:
+<SIPopup>:
     size_hint: .8, .6
     auto_dismiss: False
-    title: 'DWWI'
+    title: 'DWWI Shipping Instruction'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20, 20
+        spacing: 10
+        Label:
+            id: lb_content
+            font_size: 25
+            text: "Shipping URL: [i]http://www.www.www[/i]"
+            markup: True
+        Label:
+            id: lb_book_id
+            font_size: 25
+            text: "Book ID: "
+        GridLayout:
+            cols: 2
+            spacing: 10, 10
+            size_hint: 1, 0.5
+            Label:
+                id: lb_stat
+                font_size: 20
+                text: "Input Box ID: "
+            TextInput:
+                id: txt_boxid_2
+                text: ''
+                multiline: False
+
+        GridLayout:
+            cols: 2
+            spacing: 10, 10
+            size_hint: 1, 0.5
+            Button:
+                text: 'Cancel'
+                on_press: root.dismiss()
+            Button:
+                id: btn_confirm
+                text: 'Confirm'
+                on_press: root.on_btn_confirm()
+
+<NotificationPopup>:
+    size_hint: .8, .6
+    auto_dismiss: False
+    title: 'DWWI Notification'
     BoxLayout:
         orientation: 'vertical'
         padding: 20, 20
@@ -47,7 +95,12 @@
         Label:
             id: lb_content
             font_size: 30
-            text: "http://www.www.www"
+            text: ""
+        Label:
+            font_size: 30
+            text: ""
+
         Button:
+            id: btn_confirm
             text: 'OK'
             on_press: root.dismiss()

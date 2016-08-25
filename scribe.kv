@@ -11,7 +11,7 @@
     orientation: 'vertical'
     canvas.before:
         Color:
-            rgba: 1, 1, 1, 1
+            rgba: 0.1, 0.1, 0.1, 1
         Rectangle:
             pos: self.pos
             size: self.size
@@ -57,7 +57,9 @@
             #height: 350
             spacing: 5
             pos_hint: {'center_y':.5}
+
             DWWIWidget
+
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint_y: None

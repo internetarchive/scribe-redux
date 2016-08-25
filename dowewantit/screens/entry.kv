@@ -1,4 +1,4 @@
-MainScreen:
+Screen:
     name: 'entry'
 
     BoxLayout:
@@ -14,4 +14,4 @@ MainScreen:
             height: 50
             pos_hint: {'center_x':.5}
 
-            on_press: app.root.go_screen('search', 'left')
+            on_press: root.parent.parent.go_screen('search', 'left')

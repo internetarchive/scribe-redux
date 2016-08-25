@@ -1,4 +1,4 @@
-MainScreen:
+Screen:
     name: 'search'
 
     GridLayout:
@@ -19,4 +19,4 @@ MainScreen:
             height: 40
             size_hint_y: None
             pos_hint: {'center_x':.5}
-            on_press: app.root.search(self)
+            on_press: root.parent.parent.search(self)

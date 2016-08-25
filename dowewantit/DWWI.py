@@ -1,6 +1,11 @@
 """
 
-URL: https://archive.org/services/book/v1/do_we_want_it/?isbn=:isbn&debug=:debug
+URL: https://archive.org/services/book/v1/do_we_want_it/?iTESTISBN00016sbn=:isbn&debug=:debug
+
+0: TESTISBN00014
+1: TESTISBN00012
+2: TESTISBN00018
+3: TESTISBN00016
 
 """
 import glob
@@ -8,25 +13,20 @@ import json
 import os
 import requests
 
+from kivy.adapters.args_converters import list_item_args_converter
+from kivy.adapters.listadapter import ListAdapter
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.listview import ListItemButton
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import SlideTransition, Screen
+from kivy.uix.screenmanager import SlideTransition, Screen, ScreenManager
 from kivy.uix.textinput import TextInput
 
-Builder.load_file('DWWI.kv')
-
-
-class MainScreen(Screen):
-    fullscreen = BooleanProperty(False)
-
-    def add_widget(self, *args):
-        if 'content' in self.ids:
-            return self.ids.content.add_widget(*args)
-        return super(MainScreen, self).add_widget(*args)
+Builder.load_file('dowewantit/DWWI.kv')
 
 
 class MetadataTextInput(TextInput):
@@ -36,11 +36,58 @@ class MetadataTextInput(TextInput):
 
 
 class CautionPopup(Popup):
+    main_widget = ObjectProperty(None)
+
+    def set_main_widget(self, wid):
+        self.main_widget = wid
+
+    def on_btn_left(self):
+        self.main_widget.try_again()
+
+    def on_btn_right(self):
+        self.main_widget.confirm()
+
+
+class NotificationPopup(Popup):
     pass
 
 
-class ResultPopup(Popup):
-    pass
+class SIPopup(Popup):
+    """
+    Shipping Instruction Popup
+    """
+
+    def __init__(self):
+        super(Popup, self).__init__()
+        # self.ids['lb_stat'].bind(focus=self.on_focus_text)
+
+    def on_btn_confirm(self):
+        """
+
+        :return:
+        """
+        boxid = self.ids.txt_boxid_2.text
+        if self.check_box_id(boxid):
+            print "Box ID is valid: ", boxid
+            # TODO: Use IA metadata API to set box id value (Davide will do this)
+
+        else:
+            print "Invalid Box ID: ", boxid
+            self.ids.lb_stat.text = "Invalid Box ID, please try again."
+            self.ids.txt_boxid_2.text = ''
+            Clock.schedule_once(self.change_label, 3)
+
+    def check_box_id(self, boxid):
+        """
+        Check input box_id is valid or not
+        :param boxid:
+        :return:
+        """
+        # TODO: implement logic of validating box_id user input.
+        return False
+
+    def change_label(self, *args):
+        self.ids['lb_stat'].text = 'Input Box ID: '
 
 
 class DWWIWidget(BoxLayout):
@@ -49,15 +96,20 @@ class DWWIWidget(BoxLayout):
     screens = {}  # Dict of all screens
     hierarchy = ListProperty([])
 
-    capture_screen = ObjectProperty(None)
     caution_popup = ObjectProperty(None)
-    result_popup = ObjectProperty(None)
+    si_popup = ObjectProperty(None)
+    n_popup = ObjectProperty(None)
+
     re_code = NumericProperty(-2)
+    sm = ObjectProperty(None)
+    response = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(DWWIWidget, self).__init__(**kwargs)
         self.caution_popup = CautionPopup()
-        self.result_popup = ResultPopup()
+        self.caution_popup.set_main_widget(self)
+        self.si_popup = SIPopup()
+        self.n_popup = NotificationPopup()
 
         self.load_screen()
 
@@ -70,7 +122,7 @@ class DWWIWidget(BoxLayout):
         """
         available_screens = []
 
-        full_path_screens = glob.glob("screens/*.kv")
+        full_path_screens = glob.glob("dowewantit/screens/*.kv")
 
         for file_path in full_path_screens:
             file_name = os.path.basename(file_path)
@@ -80,6 +132,9 @@ class DWWIWidget(BoxLayout):
         for i in range(len(full_path_screens)):
             screen = Builder.load_file(full_path_screens[i])
             self.screens[available_screens[i]] = screen
+
+        self.sm = ScreenManager(id='sm')
+        self.add_widget(self.sm)
         return True
 
     def go_screen(self, dest_screen, direction):
@@ -92,11 +147,13 @@ class DWWIWidget(BoxLayout):
 
         if dest_screen == 'search':
             self.screens['search'].ids['_identifier'].text = ''
+        elif dest_screen == 'book_library':
+            self.update_books()
+            # self.caution_popup.open()
 
-        sm = self.ids.sm
-        sm.transition = SlideTransition()
+        self.sm.transition = SlideTransition()
         screen = self.screens[dest_screen]
-        sm.switch_to(screen, direction=direction)
+        self.sm.switch_to(screen, direction=direction)
         self.current_title = screen.name
 
     def search(self, wid):
@@ -127,11 +184,16 @@ class DWWIWidget(BoxLayout):
 
         api_url = 'https://archive.org/services/book/v1/do_we_want_it/?isbn='
 
-        response = json.loads(requests.get(api_url + _id + '&debug=true').text)
+        try:
+            self.response = json.loads(requests.get(api_url + _id + '&debug=true').text)
+        except requests.exceptions.ConnectionError as e:
+            print e
+            # TODO: Display Error message
+            return False
 
-        if response['status'] == 'ok':
+        if self.response['status'] == 'ok':
 
-            self.re_code = response['response']
+            self.re_code = self.response['response']
             # self.re_code = 2
 
             if self.re_code == -1:   # invalid asin or isbn
@@ -143,16 +205,17 @@ class DWWIWidget(BoxLayout):
                 self.display_popup("We do not need to scan this book.")
 
             elif self.re_code == 1:   # we need to scan this book
+                # TODO: We will fetch metadata from an API called MARC API
                 self.caution_popup.ids['btn_confirm'].text = 'Scan this book'
                 self.display_popup("We need to scan this book")
 
             elif self.re_code == 2:   # we have already scanned this book, but need another physical copy for a partner
-                self.caution_popup.ids['btn_confirm'].text = 'Send us this book'
-                self.display_popup("We need another copy for a partner")
+                self.screens['book_library'].ids['lb_content'].text = "We need another copy for a partner"
+                self.go_screen('book_library', 'left')
 
             elif self.re_code == 3:   # we have already scanned this book, but need another physical copy for ourselves
-                self.caution_popup.ids['btn_confirm'].text = 'Send us this book'
-                self.display_popup("We need another copy for ourselves")
+                self.screens['book_library'].ids['lb_content'].text = "We need another copy for ourselves"
+                self.go_screen('book_library', 'left')
 
         else:
             self.re_code = -2
@@ -202,6 +265,32 @@ class DWWIWidget(BoxLayout):
         """
         self.caution_popup.ids['lb_content'].text = message
         self.caution_popup.open()
+
+    def update_books(self):
+        """
+        Update list view on book library screen
+        :return:
+        """
+        book_list_adapter = ListAdapter(data=self.response['books'], args_converter=list_item_args_converter,
+                                        selection_mode='single', propagate_selection_to_data=False,
+                                        allow_empty_selection=False, cls=ListItemButton)
+        self.screens['book_library'].ids['l_book'].adapter = book_list_adapter
+
+    def show_si_popup(self):
+        """
+        This function is called when user presses "Send us this book" button after getting response 2 or 3
+        :return:
+        """
+        if App.get_running_app().ignore_donation_items:
+            self.n_popup.ids['lb_content'].text = 'We have already scanned this book.\n' \
+                                                  'Please send it to the boxing station'
+            self.n_popup.open()
+            self.go_screen('entry', 'left')
+        else:
+            adapter = self.screens['book_library'].ids['l_book'].adapter
+            self.si_popup.ids['lb_stat'].text = "Input Box ID: "
+            self.si_popup.ids['lb_book_id'].text = "Book ID: " + adapter.selection[0].text
+            self.si_popup.open()
 
 
 class DWWI(App):
