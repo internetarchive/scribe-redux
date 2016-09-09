@@ -37,6 +37,7 @@ import sys, subprocess
 # import internetarchive as ia
 import requests
 from dowewantit.DWWI import DWWIWidget
+from marc.MARC import MARCWidget
 
 # the kivy file containing the UI templates and actions
 Builder.load_file('scribe.kv')
@@ -51,15 +52,16 @@ class MetadataTextInput(TextInput):
     key_input = ObjectProperty(None)
     pass
 
+
 # MetadataSwitch
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 class MetadataSwitch(Switch):
     metadata_key = StringProperty(None)
     pass
 
 
 # CaptureScreen
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 class CaptureScreen(Screen):
     scribe_widget = ObjectProperty(None)
     screen_manager = ObjectProperty(None)
@@ -72,6 +74,7 @@ class CaptureScreen(Screen):
 class CaptureCover(BoxLayout):
 
     capture_screen = ObjectProperty(None)
+    popup = ObjectProperty(None)
 
     def select_default_collection(self):
         print self
@@ -79,10 +82,8 @@ class CaptureCover(BoxLayout):
         # self.ids._cset_list.text = self.get_collection_sets()[0]
 
     def add_marc(self):
-        content = MARCDialog(capture_screen = self.capture_screen)
-        self.popup = Popup(title="MARC Record", content=content,
-                            size_hint=(0.7, 0.5),)
-        content.popup = self.popup
+        content = MARCDialog(capture_screen=self.capture_screen)
+        self.popup = Popup(title="MARC Record", content=content, size_hint=(0.7, 0.5),)
         self.popup.open()
 
 
@@ -159,7 +160,7 @@ class BarcodeWidget(BoxLayout):
             pass
 
     # load_metadata()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def load_metadata(self):
         self.ids._image.source = self.loading_image
         self.ids._button.disabled = True
@@ -234,7 +235,6 @@ class BarcodeWidget(BoxLayout):
         except:
             self.show_error('There was an error creating id {id}'.format(id=self.identifier))
 
-
     # metadata_thread()
     # _____________________________________________________________________________________
     def metadata_thread(self, url):
@@ -242,7 +242,6 @@ class BarcodeWidget(BoxLayout):
             self.metadata = json.load(urllib.urlopen(url))
         except Exception:
             self.metadata = None
-
 
     # show_error()
     # _____________________________________________________________________________________
@@ -252,8 +251,7 @@ class BarcodeWidget(BoxLayout):
         print traceback.format_exc()
         msg_box = ScribeMessage()
         msg_box.text = msg
-        popup = Popup(title='Barcode Error', content=msg_box,
-              auto_dismiss=False, size_hint=(None, None), size=(400, 300))
+        popup = Popup(title='Barcode Error', content=msg_box, auto_dismiss=False, size_hint=(None, None), size=(400, 300))
         msg_box.popup = popup
         msg_box.trigger_func = popup.dismiss
         popup.open()
@@ -294,8 +292,7 @@ class UniversalIDDialog(FloatLayout):
     def show_error(self, msg):
         msg_box = ScribeMessage()
         msg_box.text = msg
-        popup = Popup(title=' Error', content=msg_box,
-              auto_dismiss=False, size_hint=(None, None), size=(400, 300))
+        popup = Popup(title=' Error', content=msg_box, auto_dismiss=False, size_hint=(None, None), size=(400, 300))
         msg_box.popup = popup
         msg_box.trigger_func = self.popup_dismiss
         popup.open()
@@ -317,6 +314,8 @@ class ScribeWidget(BoxLayout):
 class Scribe3(App):
 
     ignore_donation_items = BooleanProperty(False)
+
+    catalogs = ['calcas', 'olcas', 'notre_dame', ]
 
     def __init__(self, **kwargs):
         super(Scribe3, self).__init__(**kwargs)

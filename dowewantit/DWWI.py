@@ -20,13 +20,19 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, NumericProperty
+
+from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.listview import ListItemButton
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import SlideTransition, Screen, ScreenManager
 from kivy.uix.textinput import TextInput
 
-Builder.load_file('dowewantit/DWWI.kv')
+try:
+    Builder.load_file('dowewantit/DWWI.kv')
+except IOError:
+    Builder.load_file('DWWI.kv')
 
 
 class MetadataTextInput(TextInput):
@@ -42,10 +48,19 @@ class CautionPopup(Popup):
         self.main_widget = wid
 
     def on_btn_left(self):
+        self.remove_tmp_btn()
         self.main_widget.try_again()
 
     def on_btn_right(self):
+        self.remove_tmp_btn()
         self.main_widget.confirm()
+
+    def remove_tmp_btn(self):
+        try:
+            wid = self.ids['btn_scan_anyway']
+            self.ids['ly_grid'].remove_widget(wid)
+        except KeyError:
+            pass
 
 
 class NotificationPopup(Popup):
@@ -56,17 +71,19 @@ class SIPopup(Popup):
     """
     Shipping Instruction Popup
     """
+    dropdown = DropDown()
+    boxid = StringProperty('')
 
     def __init__(self):
         super(Popup, self).__init__()
         # self.ids['lb_stat'].bind(focus=self.on_focus_text)
+        self.add_dropdown()
 
     def on_btn_confirm(self):
         """
-
         :return:
         """
-        boxid = self.ids.txt_boxid_2.text
+        boxid = self.ids['btn_dropdown'].text
         if self.check_box_id(boxid):
             print "Box ID is valid: ", boxid
             # TODO: Use IA metadata API to set box id value (Davide will do this)
@@ -74,7 +91,6 @@ class SIPopup(Popup):
         else:
             print "Invalid Box ID: ", boxid
             self.ids.lb_stat.text = "Invalid Box ID, please try again."
-            self.ids.txt_boxid_2.text = ''
             Clock.schedule_once(self.change_label, 3)
 
     def check_box_id(self, boxid):
@@ -88,6 +104,20 @@ class SIPopup(Popup):
 
     def change_label(self, *args):
         self.ids['lb_stat'].text = 'Input Box ID: '
+
+    def add_dropdown(self):
+
+        # TODO: get valid Boxid values
+
+        for index in range(10):
+            btn = Button(text='Value %d' % index, size_hint_y=None, height=30)
+            btn.bind(on_release=lambda btn: self.dropdown.select(btn.text))
+            self.dropdown.add_widget(btn)
+
+        m_button = self.ids['btn_dropdown']
+        m_button.bind(on_release=self.dropdown.open)
+
+        self.dropdown.bind(on_select=lambda instance, x: setattr(m_button, 'text', x))
 
 
 class DWWIWidget(BoxLayout):
@@ -123,6 +153,8 @@ class DWWIWidget(BoxLayout):
         available_screens = []
 
         full_path_screens = glob.glob("dowewantit/screens/*.kv")
+        if len(full_path_screens) == 0:
+            full_path_screens = glob.glob("screens/*.kv")
 
         for file_path in full_path_screens:
             file_name = os.path.basename(file_path)
@@ -144,7 +176,6 @@ class DWWIWidget(BoxLayout):
         :param direction:       "up", "down", "right", "left"
         :return:
         """
-
         if dest_screen == 'search':
             self.screens['search'].ids['_identifier'].text = ''
         elif dest_screen == 'book_library':
@@ -169,7 +200,14 @@ class DWWIWidget(BoxLayout):
             :return:
             """
             # TODO: Add logic to check whether the value has valid type of ASIN/ISBN or not.
-            if len(msg) not in [10, 13]:  # length should be 10 or 13
+            if len(msg) == 0:
+                self.n_popup.ids['lb_content'].text = 'Error, please input ASIN/ISBN.'
+                self.n_popup.open()
+                return False
+            elif len(msg) not in [10, 13]:  # length should be 10 or 13
+                self.n_popup.ids['lb_content'].text = 'Error, invalid ASIN/ISBN.'
+                self.n_popup.open()
+                self.screens['search'].ids['_identifier'].text = ''
                 return False
             else:
                 return True
@@ -202,6 +240,9 @@ class DWWIWidget(BoxLayout):
 
             elif self.re_code == 0:   # we don't need this book
                 self.caution_popup.ids['btn_confirm'].text = 'Confirm'
+                new_btn = Button(text='Scan anyway', id='btn_scan_anyway')
+                new_btn.bind(on_release=self.scan_anyway)
+                self.caution_popup.ids['ly_grid'].add_widget(new_btn)
                 self.display_popup("We do not need to scan this book.")
 
             elif self.re_code == 1:   # we need to scan this book
@@ -291,6 +332,17 @@ class DWWIWidget(BoxLayout):
             self.si_popup.ids['lb_stat'].text = "Input Box ID: "
             self.si_popup.ids['lb_book_id'].text = "Book ID: " + adapter.selection[0].text
             self.si_popup.open()
+
+    def scan_anyway(self, *args):
+        """
+        Return {'DWWI': False} dict to the main widget
+        :return:
+        """
+        self.caution_popup.remove_tmp_btn()
+        self.caution_popup.dismiss()
+        ret_val = {'DWWI': False}
+        # TODO: Implement logic of returning this value to the main widget. (Not sure which widget should receive this)
+        print ret_val
 
 
 class DWWI(App):

@@ -19,7 +19,7 @@ The VM is set up to share the folder in /vagrant, so your changes are immediatel
 
 Install the dependencies you'll need to compile Cython, plus pip and git if you don't already have them
 
-        sudo apt-get install build-essential python-dev python-pip git libssl-dev libffi-dev
+        sudo apt-get install build-essential python-dev python-pip git 
 
 Install pygame as follows
 

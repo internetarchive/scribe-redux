@@ -16,7 +16,6 @@
             pos: self.pos
             size: self.size
     ## the toolbar on the top
-    ##
     ActionBar:
         pos_hint: {'top':1}
         background_color: 0,0,0,1
@@ -32,7 +31,6 @@
                 valign: 'middle'
                 text_size: self.size
                 padding: (-75, 0)
-   
 
     ScreenManager:
         id: _screen_manager
@@ -60,19 +58,21 @@
 
             DWWIWidget
 
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: None
-                height: 40
-                #padding: [0, 15, 0, 0]
-                Label:
-                    text: 'Collection string:'
-                    size_hint_x: .4
-                    valign: 'middle'
-                Button:
-                    size_hint_x: .2
-                    text: "MARC"
-                    on_release: root.add_marc()
+            MARCWidget
+
+#            BoxLayout:
+#                orientation: 'horizontal'
+#                size_hint_y: None
+#                height: 40
+#                #padding: [0, 15, 0, 0]
+#                Label:
+#                    text: 'Collection string:'
+#                    size_hint_x: .4
+#                    valign: 'middle'
+#                Button:
+#                    size_hint_x: .2
+#                    text: "MARC"
+#                    on_release: root.add_marc()
 
 
 <MARCDialog>:
