@@ -9,6 +9,7 @@
 <ScribeWidget>:
     id: _scribe_widget
     orientation: 'vertical'
+    height: 800
     canvas.before:
         Color:
             rgba: 0.1, 0.1, 0.1, 1
@@ -57,9 +58,10 @@
             pos_hint: {'center_y':.5}
 
             DWWIWidget
+                height: 400
 
             MARCWidget
-
+                height: 400
 #            BoxLayout:
 #                orientation: 'horizontal'
 #                size_hint_y: None
