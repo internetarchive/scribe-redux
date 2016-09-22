@@ -1,0 +1,40 @@
+Screen:
+    name: 'search'
+    GridLayout:
+        cols: 2
+        padding: 20, 20
+        spacing: 20
+        GridLayout:
+            cols: 2
+            orientation: 'vertical'
+            padding: 20
+            spacing: 10
+            Label:
+                text: 'Catalogs: '
+                size_hint_x: .4
+            Button:
+                id: btn_dd_catalog
+            Label:
+                text: 'Search Type: '
+                size_hint_x: .4
+            Button:
+                id: btn_dd_type
+
+            Label:
+                text: 'Query:'
+                size_hint_x: .4
+            MetadataTextInput:
+                id: txt_query
+                hint_text: 'QUERY'
+                multiline: False
+                height: 40
+                metadata_key: 'query'
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 50
+            Button:
+                text: 'Search'
+                height: 40
+                pos_hint: {'center_x':.5}
+                on_press: root.parent.parent.search()

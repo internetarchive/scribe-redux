@@ -1,0 +1,31 @@
+<MARCWidget>:
+    id: ttt
+    orientation: 'vertical'
+    padding: 5
+    spacing: 5
+    ScreenManager:
+        id: sm
+        on_current_screen:
+            idx = root.screen_names.index(args[1].name)
+            if idx > -1: root.hierarchy.append(idx)
+
+<NotifyPopup>:
+    size_hint: .8, .6
+    auto_dismiss: False
+    title: 'MARC Notification'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20, 20
+        spacing: 40
+        Label:
+            id: lb_content
+            font_size: 30
+            text: ""
+        Label:
+            font_size: 30
+            text: ""
+
+        Button:
+            id: btn_confirm
+            text: 'OK'
+            on_press: root.dismiss()

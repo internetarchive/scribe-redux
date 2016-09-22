@@ -1,0 +1,16 @@
+Screen:
+    name: 'entry'
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 10
+        Label:
+            text: 'MA chine-Readable Cataloging'
+            font_size: 40
+        Button:
+            id: _button
+            text: 'Start now'
+            size_hint: 0.8, None
+            height: 50
+            pos_hint: {'center_x':.5}
+            on_press: root.parent.parent.go_screen('search', 'left')

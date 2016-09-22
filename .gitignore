@@ -1,1 +1,14 @@
-*.pyc
+# Created by .ignore support plugin (hsz.mobi)
+.gitignore
+.idea/.name
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scribe-redux.iml
+.idea/workspace.xml
+scribe/
+dowewantit/DWWI.pyc
+dowewantit/__init__.pyc
+marc/MARC.pyc
+marc/__init__.pyc
+

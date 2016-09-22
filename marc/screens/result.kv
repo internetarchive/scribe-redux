@@ -1,0 +1,26 @@
+Screen:
+    name: 'result'
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 10
+        Label:
+            text: 'Search result'
+            font_size: 30
+            color: 0.1, 0.1, 0.1
+        Label:
+            id: lb_result
+            font_size: 20
+            text: ''
+        GridLayout:
+            cols: 2
+            spacing: 10, 10
+            size_hint: 1, 0.5
+            Button:
+                text: 'Accept'
+                on_press: root.parent.parent.btn_accept()
+            Button:
+                id: btn_confirm
+                text: 'RETRY'
+                on_press: root.parent.parent.go_screen('search', 'right')

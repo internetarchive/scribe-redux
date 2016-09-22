@@ -1,8 +1,16 @@
+import json
+import traceback
+import urllib
+from string import join
 
+from kivy._event import partial
+from kivy.adapters.listadapter import ListAdapter
 from kivy.app import App
+from kivy.network.urlrequest import UrlRequest
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.listview import ListView, ListItemButton
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
@@ -26,31 +34,34 @@ import logging
 import os
 import sys, subprocess
 
-import internetarchive as ia
+# import internetarchive as ia
 import requests
 from dowewantit.DWWI import DWWIWidget
+from marc.MARC import MARCWidget
 
-## the kivy file containing the UI templates and actions
+# the kivy file containing the UI templates and actions
 Builder.load_file('scribe.kv')
+
+ignore_donation_items = True
 
 
 # MetadataTextInput
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 class MetadataTextInput(TextInput):
     metadata_key = StringProperty(None)
     key_input = ObjectProperty(None)
     pass
 
+
 # MetadataSwitch
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 class MetadataSwitch(Switch):
     metadata_key = StringProperty(None)
     pass
 
 
-
 # CaptureScreen
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 class CaptureScreen(Screen):
     scribe_widget = ObjectProperty(None)
     screen_manager = ObjectProperty(None)
@@ -59,24 +70,21 @@ class CaptureScreen(Screen):
 # CaptureCover
 # this class manages the cover capture dialog
 # Main thread
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 class CaptureCover(BoxLayout):
 
     capture_screen = ObjectProperty(None)
+    popup = ObjectProperty(None)
 
     def select_default_collection(self):
         print self
 
-        #self.ids._cset_list.text = self.get_collection_sets()[0]
+        # self.ids._cset_list.text = self.get_collection_sets()[0]
 
     def add_marc(self):
-        content = MARCDialog(capture_screen = self.capture_screen)
-        self.popup = Popup(title="MARC Record", content=content,
-                            size_hint=(0.7, 0.5),)
-        content.popup = self.popup
+        content = MARCDialog(capture_screen=self.capture_screen)
+        self.popup = Popup(title="MARC Record", content=content, size_hint=(0.7, 0.5),)
         self.popup.open()
-
-
 
 
 class MARCDialog(FloatLayout):
@@ -90,8 +98,6 @@ class MARCDialog(FloatLayout):
 
 class BarcodeWidget(BoxLayout):
     capture_screen = ObjectProperty(None)
-
-
 
     def load_universal(self):
         self.ids._image.source = self.loading_image
@@ -134,7 +140,7 @@ class BarcodeWidget(BoxLayout):
             print "Ok, called barcode."
             l = label.label_create(self.ids._barcode.text)
             print l
-            #webbrowser.open(l)
+            # webbrowser.open(l)
             try:
                 import cups
                 conn = cups.Connection()
@@ -154,7 +160,7 @@ class BarcodeWidget(BoxLayout):
             pass
 
     # load_metadata()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def load_metadata(self):
         self.ids._image.source = self.loading_image
         self.ids._button.disabled = True
@@ -168,9 +174,8 @@ class BarcodeWidget(BoxLayout):
         files_url = 'https://archive.org/metadata/{id}/files'.format(id=self.identifier)
         req = UrlRequest(files_url, self.load_metadata_callback, on_error=self.error_callback, on_failure=self.error_callback)
 
-
     # load_metadata_callback()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def load_metadata_callback(self, req, files):
         
         if files is None:
@@ -195,9 +200,9 @@ class BarcodeWidget(BoxLayout):
                 self.show_error('This item already contains data files!\n(file={file}, format={format})'.format(file=file['name'], format=file['format']))
                 return
 
-        #download meta.xml and put it in the item
-        #TODO: make this non-blocking. Since /download/ returns a redirect, using
-        #kivy's UrlRequest is not straightforward
+        # download meta.xml and put it in the item
+        # TODO: make this non-blocking. Since /download/ returns a redirect, using
+        # kivy's UrlRequest is not straightforward
         meta_url = 'https://archive.org/download/{id}/{id}_meta.xml'.format(id=self.identifier)
         meta_path = join(self.capture_screen.book_dir, 'metadata.xml')
         try:
@@ -207,7 +212,7 @@ class BarcodeWidget(BoxLayout):
         self.capture_screen.load_metadata()
         self.capture_screen.disable_metadata()
 
-        #write out identifier.txt
+        # write out identifier.txt
         id_path = join(self.capture_screen.book_dir, 'identifier.txt')
         f = open(id_path, 'w')
         f.write(self.identifier)
@@ -215,13 +220,12 @@ class BarcodeWidget(BoxLayout):
 
         self.ids._image.source = self.transparent_image
 
-
     # error_callback()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def error_callback(self, request, error):
         print 'error:', error
         self.show_error('You seem to be offline.\nIrregardless, creating id {id}'.format(id=self.identifier))
-        #write out identifier.txt
+        # write out identifier.txt
         try:
             id_path = join(self.capture_screen.book_dir, 'identifier.txt')
             f = open(id_path, 'w')
@@ -231,36 +235,32 @@ class BarcodeWidget(BoxLayout):
         except:
             self.show_error('There was an error creating id {id}'.format(id=self.identifier))
 
-
     # metadata_thread()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def metadata_thread(self, url):
         try:
             self.metadata = json.load(urllib.urlopen(url))
         except Exception:
             self.metadata = None
 
-
     # show_error()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def show_error(self, msg):
         self.ids._image.source = self.transparent_image
         self.ids._button.disabled = False
         print traceback.format_exc()
         msg_box = ScribeMessage()
         msg_box.text = msg
-        popup = Popup(title='Barcode Error', content=msg_box,
-              auto_dismiss=False, size_hint=(None, None), size=(400, 300))
+        popup = Popup(title='Barcode Error', content=msg_box, auto_dismiss=False, size_hint=(None, None), size=(400, 300))
         msg_box.popup = popup
         msg_box.trigger_func = popup.dismiss
         popup.open()
 
-
-
 # UniversalIDDialog
 # this is the widget to that shows a list of possible identifiers
 # obtained by querying the ISBN-to-id API on archive.org
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
+
 
 class UniversalIDDialog(FloatLayout):
     text_input = ObjectProperty(None)
@@ -274,11 +274,11 @@ class UniversalIDDialog(FloatLayout):
         super(UniversalIDDialog, self).__init__(**kwargs)
         adapter = ListAdapter(
                 data=self.id_list,
-                selection_mode= 'single',
+                selection_mode='single',
                 allow_empty_selection=False,
                 cls=ListItemButton)
-        #adapter.bind(on_selection_change = self.selected_callback)
-        self.listview = ListView(adapter = adapter)
+        # adapter.bind(on_selection_change = self.selected_callback)
+        self.listview = ListView(adapter=adapter)
         rootbox = self.ids._list_box
         rootbox.add_widget(self.listview)
 
@@ -288,35 +288,39 @@ class UniversalIDDialog(FloatLayout):
         Clock.schedule_once(partial(self.callback, self.listview.adapter.selection[0].text))
 
     # show_error()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def show_error(self, msg):
         msg_box = ScribeMessage()
         msg_box.text = msg
-        popup = Popup(title=' Error', content=msg_box,
-              auto_dismiss=False, size_hint=(None, None), size=(400, 300))
+        popup = Popup(title=' Error', content=msg_box, auto_dismiss=False, size_hint=(None, None), size=(400, 300))
         msg_box.popup = popup
         msg_box.trigger_func = self.popup_dismiss
         popup.open()
 
-
     # popup_dismiss()
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def popup_dismiss(self, popup):
         popup.dismiss()
 
 
 class ScribeWidget(BoxLayout):
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
     def __init__(self, **kwargs):
         super(ScribeWidget, self).__init__(**kwargs)
 
 
 # this class tarts the UI and the app
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 class Scribe3(App):
+
+    ignore_donation_items = BooleanProperty(False)
+
+    catalogs = ['calcas', 'olcas', 'notre_dame', ]
 
     def __init__(self, **kwargs):
         super(Scribe3, self).__init__(**kwargs)
+
+        self.ignore_donation_items = False
 
     def build(self):
         self.title = 'ttscribe redux'

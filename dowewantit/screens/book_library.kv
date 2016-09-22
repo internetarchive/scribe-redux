@@ -1,0 +1,32 @@
+Screen:
+    name: 'book_library'
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 10
+        Label:
+            id: lb_content
+            text: 'BOOK LIBRARY'
+            font_size: 40
+            color: 0.1, 0.1, 0.1
+        GridLayout:
+            cols: 2
+            spacing: 10, 10
+            size_hint: 1, 0.5
+            ListView:
+                id: l_book
+            Label:
+                id: lb_book_content
+                text: "Here is the detailed \n content of the book"
+        GridLayout:
+            cols: 2
+            spacing: 10, 10
+            size_hint: 1, 0.5
+            Button:
+                text: 'Try again'
+                on_press: root.parent.parent.go_screen('search', 'right')
+            Button:
+                id: btn_confirm
+                text: 'Send us this Book'
+                on_press: root.parent.parent.show_si_popup()

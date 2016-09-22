@@ -9,14 +9,14 @@
 <ScribeWidget>:
     id: _scribe_widget
     orientation: 'vertical'
+    height: 800
     canvas.before:
         Color:
-            rgba: 1, 1, 1, 1
+            rgba: 0.1, 0.1, 0.1, 1
         Rectangle:
             pos: self.pos
             size: self.size
     ## the toolbar on the top
-    ##
     ActionBar:
         pos_hint: {'top':1}
         background_color: 0,0,0,1
@@ -32,7 +32,6 @@
                 valign: 'middle'
                 text_size: self.size
                 padding: (-75, 0)
-   
 
     ScreenManager:
         id: _screen_manager
@@ -57,20 +56,25 @@
             #height: 350
             spacing: 5
             pos_hint: {'center_y':.5}
+
             DWWIWidget
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: None
-                height: 40
-                #padding: [0, 15, 0, 0]
-                Label:
-                    text: 'Collection string:'
-                    size_hint_x: .4
-                    valign: 'middle'
-                Button:
-                    size_hint_x: .2
-                    text: "MARC"
-                    on_release: root.add_marc()
+                height: 400
+
+            MARCWidget
+                height: 400
+#            BoxLayout:
+#                orientation: 'horizontal'
+#                size_hint_y: None
+#                height: 40
+#                #padding: [0, 15, 0, 0]
+#                Label:
+#                    text: 'Collection string:'
+#                    size_hint_x: .4
+#                    valign: 'middle'
+#                Button:
+#                    size_hint_x: .2
+#                    text: "MARC"
+#                    on_release: root.add_marc()
 
 
 <MARCDialog>:
